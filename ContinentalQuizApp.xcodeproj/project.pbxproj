@@ -10,9 +10,22 @@
 		86556AF72DC9D84500273F1B /* ContinentalQuizApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ContinentalQuizApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		86F9EE8C2DCB66310062DBE7 /* Exceptions for "ContinentalQuizApp" folder in "ContinentalQuizApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 86556AF62DC9D84500273F1B /* ContinentalQuizApp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		86556AF92DC9D84500273F1B /* ContinentalQuizApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				86F9EE8C2DCB66310062DBE7 /* Exceptions for "ContinentalQuizApp" folder in "ContinentalQuizApp" target */,
+			);
 			path = ContinentalQuizApp;
 			sourceTree = "<group>";
 		};
@@ -254,6 +267,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"ContinentalQuizApp/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ContinentalQuizApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -282,6 +297,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"ContinentalQuizApp/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ContinentalQuizApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
