@@ -89,7 +89,7 @@ struct HomeView: View {
                     .font(AppFont.interSemibold18.returnFont())
                     .foregroundStyle(.black)
                 HStack {
-                    Text("Will Start in")
+                    Text("WILL START IN")
                         .font(.headline)
                         .foregroundColor(.red)
                     Text("00:\(String(format: "%02d", time))")
@@ -109,6 +109,7 @@ struct TimerInputView: View {
     @State private var secondTens = ""
     @State private var secondUnits = ""
     var onSave: (Int) -> Void
+    @FocusState private var focusedField: TimeField?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -134,19 +135,19 @@ struct TimerInputView: View {
             Text("Hour")
                 .font(.system(size: 13, weight: .regular))
             HStack(spacing: 5) {
-                TimeInputField(text: $hourTens)
-                TimeInputField(text: $hourUnits)
+                TimeInputField(text: $hourTens, field: .hourTens, focusedField: $focusedField)
+                TimeInputField(text: $hourUnits, field: .hourUnits, focusedField: $focusedField)
             }
         }
     }
-    
+
     private func MinuteField() -> some View {
         VStack(spacing: 3) {
             Text("Minute")
                 .font(.system(size: 13, weight: .regular))
             HStack(spacing: 5) {
-                TimeInputField(text: $minuteTens)
-                TimeInputField(text: $minuteUnits)
+                TimeInputField(text: $minuteTens, field: .minuteTens, focusedField: $focusedField)
+                TimeInputField(text: $minuteUnits, field: .minuteUnits, focusedField: $focusedField)
             }
         }
     }
@@ -156,8 +157,8 @@ struct TimerInputView: View {
             Text("Second")
                 .font(.system(size: 13, weight: .regular))
             HStack(spacing: 5) {
-                TimeInputField(text: $secondTens)
-                TimeInputField(text: $secondUnits)
+                TimeInputField(text: $secondTens, field: .secondTens, focusedField: $focusedField)
+                TimeInputField(text: $secondUnits, field: .secondUnits, focusedField: $focusedField)
             }
         }
     }
