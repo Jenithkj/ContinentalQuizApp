@@ -11,13 +11,21 @@ import CoreData
 struct HomeView: View {
     @State private var remainingTime: Int? = nil
     @State private var timer: Timer?
+    @State private var screenFlow: ScreenFlow = .scheduleQuiz
+    @StateObject var viewModel = QuestionViewModel()
+    @State private var currentQuestionIndex: Int = 0
     
     var body: some View {
         VStack(spacing: 0) {
             TopOrangeView()
-            HeaderView()
-            TimerInputView(onSave: startTimer)
-            CountDownTimer()
+            if screenFlow == .scheduleQuiz {
+                HeaderView()
+                TimerInputView(onSave: startTimer)
+            } else if screenFlow == .countdownQuiz {
+                CountDownTimer()
+            } else if screenFlow == .activeQuiz {
+//                QuizView(question: viewModel.questions)
+            }
         }
         .frame(maxHeight: .infinity, alignment: .top)
         .ignoresSafeArea()
@@ -72,15 +80,19 @@ struct HomeView: View {
         remainingTime = seconds
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            if let time = remainingTime, time > 0 {
-                remainingTime = time - 1
-            } else {
+            guard let time = remainingTime else { return }
+            if time > 1 && time <= 20 {
+                screenFlow = .countdownQuiz
+            } else if time == 0 {
+                screenFlow = .activeQuiz
                 timer?.invalidate()
                 timer = nil
+                return
             }
+            remainingTime = time - 1
         }
     }
-    
+
     @ViewBuilder
     private func CountDownTimer() -> some View {
         if let time = remainingTime, (1...20).contains(time) {
@@ -175,6 +187,12 @@ struct TimerInputView: View {
         .frame(width: 100, height: 35)
         .padding(.top, 20)
     }
+}
+
+enum ScreenFlow {
+    case scheduleQuiz
+    case countdownQuiz
+    case activeQuiz
 }
 
 #Preview {
