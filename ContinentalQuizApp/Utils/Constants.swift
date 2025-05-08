@@ -1,0 +1,10 @@
+//
+//  Constants.swift
+//  ContinentalQuizApp
+//
+//  Created by Jenith KJ on 08/05/25.
+//
+
+import Foundation
+
+typealias CompletionHandler = () -> ()
