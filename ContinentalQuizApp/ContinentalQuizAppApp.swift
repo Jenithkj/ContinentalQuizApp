@@ -15,6 +15,7 @@ struct ContinentalQuizAppApp: App {
         WindowGroup {
             HomeView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+//            QuizView()
         }
     }
 }

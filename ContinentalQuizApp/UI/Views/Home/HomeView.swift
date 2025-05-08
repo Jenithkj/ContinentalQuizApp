@@ -12,6 +12,8 @@ struct HomeView: View {
     @State private var remainingTime: Int? = nil
     @State private var timer: Timer?
     @State private var screenFlow: ScreenFlow = .scheduleQuiz
+    @StateObject var viewModel = QuestionViewModel()
+    @State private var currentQuestionIndex: Int = 0
     
     var body: some View {
         VStack(spacing: 0) {
@@ -22,7 +24,7 @@ struct HomeView: View {
             } else if screenFlow == .countdownQuiz {
                 CountDownTimer()
             } else if screenFlow == .activeQuiz {
-                CountDownTimer()
+//                QuizView(question: viewModel.questions)
             }
         }
         .frame(maxHeight: .infinity, alignment: .top)
