@@ -8,14 +8,13 @@
 import SwiftUI
 
 struct QuizView: View {
-    @StateObject var viewModel = QuestionViewModel()
+    @EnvironmentObject var viewModel: QuestionViewModel
     @State private var currentQuestionIndex = 0
     @State private var selectedCountryId: Int? = nil
     @State private var isAnswered = false
     @State private var timer: Timer? = nil
     @State private var countdown = 30
     @State private var isTimeUp = false
-
     @State private var isGameOver = false
     @State private var showScore = false
     @State private var score = 0
@@ -26,78 +25,10 @@ struct QuizView: View {
                 ResultView()
             } else {
                 QuestionHeaderView()
-                if !viewModel.questions.isEmpty {
-                    let question = viewModel.questions[currentQuestionIndex]
-                    Image(question.countryCode)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 70, height: 55)
-                        .shadow(radius: 2)
-
-                    Text("Time Left: \(countdown) seconds")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-
-                    let columns = [
-                        GridItem(.flexible(), spacing: 10),
-                        GridItem(.flexible(), spacing: 10)
-                    ]
-
-                    LazyVGrid(columns: columns, spacing: 15) {
-                        ForEach(question.countries, id: \.id) { country in
-                            VStack(spacing: 5) {
-
-                                Button(action: {
-                                    guard !isAnswered else { return }
-                                    selectedCountryId = country.id
-                                    isAnswered = true
-                                    stopTimer()
-                                    if country.id == question.answerID {
-                                        score += 1
-                                    }
-                                    evaluateAnswer()
-                                }) {
-                                    Text(country.countryName)
-                                        .frame(height: 25)
-                                        .frame(maxWidth: .infinity)
-                                        .background(buttonBackground(for: country.id, correctId: question.answerID))
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundColor(getTextColor(for: country.id, correctId: question.answerID))
-                                        .minimumScaleFactor(0.8)
-                                        .cornerRadius(2)
-                                }
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(returnOptionBorderColor(for: country.id, correctId: question.answerID), lineWidth: 2)
-                                )
-
-                                if isAnswered {
-                                    if selectedCountryId == country.id {
-                                        if country.id == question.answerID {
-                                            Text("Correct").foregroundColor(.green)
-                                        } else {
-                                            Text("Wrong").foregroundColor(.red)
-                                        }
-                                    } else if country.id == question.answerID {
-                                        Text("Correct").foregroundColor(.green)
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if isTimeUp {
-                        Text("Time's Up!")
-                            .font(.headline)
-                            .foregroundColor(.red)
-                    }
-                } else {
-                    Text("Loading questions...")
-                }
+                QuizOptionsView()
             }
-
-            Spacer()
         }
+        .frame(maxHeight: .infinity, alignment: .top)
         .onAppear {
             startTimer()
         }
@@ -113,7 +44,6 @@ struct QuizView: View {
         }
         return .black
     }
-
 
     private func buttonBackground(for countryId: Int, correctId: Int) -> Color {
         if isTimeUp || isAnswered {
@@ -131,12 +61,114 @@ struct QuizView: View {
     private func returnOptionBorderColor(for countryId: Int, correctId: Int) -> Color {
         if isTimeUp || isAnswered {
             if countryId == correctId {
-                return Color.green // Correct answer's border is green
+                return Color.green
             } else if countryId == selectedCountryId {
-                return Color.orange // Wrong answer's border is orange
+                return Color.orange
             }
         }
         return Color.black
+    }
+    
+    @ViewBuilder
+    private func QuizOptionsView() -> some View {
+        if !viewModel.questions.isEmpty {
+            let question = viewModel.questions[currentQuestionIndex]
+            let countries = question.countries
+            let midIndex = countries.count / 2
+            let firstColumn = Array(countries.prefix(midIndex + countries.count % 2))
+            let secondColumn = Array(countries.suffix(from: midIndex + countries.count % 2))
+
+            HStack(alignment: .top) {
+                FlagImageView(question.countryCode)
+                Spacer()
+                HStack(alignment: .top, spacing: 20) {
+                    VStack(spacing: 10) {
+                        ForEach(firstColumn, id: \.id) { country in
+                            countryButton(for: country, correctId: question.answerID)
+                        }
+                    }
+
+                    VStack(spacing: 10) {
+                        ForEach(secondColumn, id: \.id) { country in
+                            countryButton(for: country, correctId: question.answerID)
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 25)
+
+            if isTimeUp {
+                Text("Time's Up!")
+                    .font(.headline)
+                    .foregroundColor(.red)
+            }
+        } else {
+            Text("Loading questions...")
+        }
+    }
+
+    @ViewBuilder
+    private func countryButton(for country: Country, correctId: Int) -> some View {
+        VStack(spacing: 5) {
+            Button(action: {
+                guard !isAnswered else { return }
+                selectedCountryId = country.id
+                isAnswered = true
+                stopTimer()
+                if country.id == correctId {
+                    score += 1
+                }
+                evaluateAnswer()
+            }) {
+                Text(country.countryName)
+                    .padding(.horizontal, 10)
+                    .frame(width: 120, height: 25)
+                    .background(buttonBackground(for: country.id, correctId: correctId))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(getTextColor(for: country.id, correctId: correctId))
+                    .minimumScaleFactor(0.8)
+                    .cornerRadius(2)
+            }
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(returnOptionBorderColor(for: country.id, correctId: correctId), lineWidth: 1)
+            )
+            
+            Text(resultText(for: country.id, correctId: correctId))
+                .font(.system(size: 6, weight: .regular))
+                .foregroundColor(resultColor(for: country.id, correctId: correctId))
+                .frame(height: 8)
+        }
+    }
+
+    private func resultText(for id: Int, correctId: Int) -> String {
+        guard isAnswered else { return "" }
+        if selectedCountryId == id {
+            return id == correctId ? "CORRECT" : "Wrong"
+        } else if id == correctId {
+            return "CORRECT"
+        }
+        return ""
+    }
+
+    private func resultColor(for id: Int, correctId: Int) -> Color {
+        guard isAnswered else { return .clear }
+        if selectedCountryId == id {
+            return id == correctId ? Colors.green_01C414 : Colors.red_FF0000
+        } else if id == correctId {
+            return Colors.green_01C414
+        }
+        return .clear
+    }
+    
+    @ViewBuilder
+    private func FlagImageView(_ name: String) -> some View {
+        Image(name)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 70, height: 60)
+            .shadow(radius: 2)
     }
 
     private func startTimer() {
@@ -209,7 +241,6 @@ struct QuizView: View {
                         .font(.system(size: 30, weight: .semibold))
                         .foregroundColor(Colors.gray_484848)
                 }
-
             } else {
                 Text("GAME OVER")
                     .font(.system(size: 35, weight: .semibold))
@@ -222,22 +253,26 @@ struct QuizView: View {
     }
     
     private func QuestionHeaderView() -> some View {
-        HStack {
-            ZStack {
-                Rectangle()
-                    .fill(Color.black)
-                    .frame(width: 44, height: 40)
-                    .cornerRadius(5, corners: [.topRight, .bottomRight])
-                Text("\(currentQuestionIndex + 1)")
-                    .foregroundStyle(.white)
-                    .frame(width: 30, height: 30)
-                    .background(Colors.orange_FF7043)
-                    .cornerRadius(15)
+        VStack {
+            HeaderWithTimer(time: $countdown)
+            HStack {
+                ZStack {
+                    Rectangle()
+                        .fill(Color.black)
+                        .frame(width: 44, height: 40)
+                        .cornerRadius(5, corners: [.topRight, .bottomRight])
+                    Text("\(currentQuestionIndex + 1)")
+                        .foregroundStyle(.white)
+                        .frame(width: 30, height: 30)
+                        .background(Colors.orange_FF7043)
+                        .cornerRadius(15)
+                }
+                Spacer()
+                Text("GUESS THE COUNTRY FROM THE FLAG ?")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
-            Spacer()
-            Text("GUESS THE COUNTRY FROM THE FLAG ?")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(.black)
         }
         .frame(maxWidth: .infinity, alignment: .center)
     }
