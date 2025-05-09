@@ -20,5 +20,4 @@ struct OrangeButtonModifier: ViewModifier {
             .multilineTextAlignment(.center)
             .cornerRadius(cornerRadius)
     }
-    
 }

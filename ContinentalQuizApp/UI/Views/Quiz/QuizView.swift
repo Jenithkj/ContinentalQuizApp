@@ -145,7 +145,7 @@ struct QuizView: View {
     private func resultText(for id: Int, correctId: Int) -> String {
         guard isAnswered else { return "" }
         if selectedCountryId == id {
-            return id == correctId ? "CORRECT" : "Wrong"
+            return id == correctId ? "CORRECT" : "WRONG"
         } else if id == correctId {
             return "CORRECT"
         }
@@ -192,11 +192,9 @@ struct QuizView: View {
     private func timeUp() {
         isTimeUp = true
         stopTimer()
-
         if selectedCountryId == nil {
             selectedCountryId = viewModel.questions[currentQuestionIndex].answerID
         }
-
         moveToNextQuestionAfterDelay()
     }
 
