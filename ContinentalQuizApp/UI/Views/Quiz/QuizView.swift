@@ -9,15 +9,16 @@ import SwiftUI
 
 struct QuizView: View {
     @EnvironmentObject var viewModel: QuestionViewModel
-    @State private var currentQuestionIndex = 0
+    @Environment(\.scenePhase) var scenePhase
+    @State private var currentQuestionIndex = UserDefaults.standard.integer(forKey: "currentQuestionIndex")
     @State private var selectedCountryId: Int? = nil
     @State private var isAnswered = false
     @State private var timer: Timer? = nil
-    @State private var countdown = 30
+    @State private var countdown = UserDefaults.standard.integer(forKey: "countdown") == 0 ? 30 : UserDefaults.standard.integer(forKey: "countdown")
     @State private var isTimeUp = false
     @State private var isGameOver = false
     @State private var showScore = false
-    @State private var score = 0
+    @State private var score = UserDefaults.standard.integer(forKey: "score")
 
     var body: some View {
         VStack(spacing: 20) {
@@ -32,6 +33,23 @@ struct QuizView: View {
         .onAppear {
             startTimer()
         }
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .background || newPhase == .inactive {
+                saveQuizState()
+            }
+        }
+    }
+    
+    private func saveQuizState() {
+        UserDefaults.standard.set(currentQuestionIndex, forKey: "currentQuestionIndex")
+        UserDefaults.standard.set(countdown, forKey: "countdown")
+        UserDefaults.standard.set(score, forKey: "score")
+    }
+
+    private func resetQuizState() {
+        UserDefaults.standard.removeObject(forKey: "currentQuestionIndex")
+        UserDefaults.standard.removeObject(forKey: "countdown")
+        UserDefaults.standard.removeObject(forKey: "score")
     }
     
     private func getTextColor(for countryId: Int, correctId: Int) -> Color {
@@ -216,6 +234,7 @@ struct QuizView: View {
     private func showGameOver() {
         isGameOver = true
         stopTimer()
+        resetQuizState()
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             showScore = true
         }

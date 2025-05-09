@@ -77,19 +77,20 @@ struct HomeView: View {
     @ViewBuilder
     private func CountDownTimer() -> some View {
         if let time = remainingTime, (1...20).contains(time) {
-            VStack {
+            VStack(spacing: 15) {
                 Text("CHALLENGE")
                     .font(AppFont.interSemibold18.returnFont())
-                    .foregroundStyle(.black)
+                    .foregroundColor(.black)
                 HStack {
                     Text("WILL START IN")
-                        .font(.headline)
-                        .foregroundColor(.red)
+                        .font(AppFont.interSemibold24.returnFont())
+                        .foregroundColor(.black)
                     Text("00:\(String(format: "%02d", time))")
                         .foregroundStyle(Colors.gray_787878)
                         .font(AppFont.interSemibold28.returnFont())
                 }
             }
+            .padding(.top, 30)
         }
     }
 }

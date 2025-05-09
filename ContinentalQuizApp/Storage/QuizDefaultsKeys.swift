@@ -6,3 +6,10 @@
 //
 
 import Foundation
+import SwiftUI
+
+struct QuizDefaultsKeys {
+    static let questionIndex = "currentQuestionIndex"
+    static let countdown = "countdown"
+    static let timestamp = "timestamp"
+}
