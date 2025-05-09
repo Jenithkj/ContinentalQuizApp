@@ -46,6 +46,7 @@ struct QuizView: View {
                     LazyVGrid(columns: columns, spacing: 15) {
                         ForEach(question.countries, id: \.id) { country in
                             VStack(spacing: 5) {
+
                                 Button(action: {
                                     guard !isAnswered else { return }
                                     selectedCountryId = country.id
@@ -61,10 +62,14 @@ struct QuizView: View {
                                         .frame(maxWidth: .infinity)
                                         .background(buttonBackground(for: country.id, correctId: question.answerID))
                                         .font(.system(size: 13, weight: .semibold))
-                                        .foregroundColor(.black)
+                                        .foregroundColor(getTextColor(for: country.id, correctId: question.answerID))
                                         .minimumScaleFactor(0.8)
-                                        .cornerRadius(4)
+                                        .cornerRadius(2)
                                 }
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(returnOptionBorderColor(for: country.id, correctId: question.answerID), lineWidth: 2)
+                                )
 
                                 if isAnswered {
                                     if selectedCountryId == country.id {
@@ -97,16 +102,41 @@ struct QuizView: View {
             startTimer()
         }
     }
+    
+    private func getTextColor(for countryId: Int, correctId: Int) -> Color {
+        if isAnswered {
+            if countryId == correctId {
+                return .black
+            } else if countryId == selectedCountryId {
+                return .white
+            }
+        }
+        return .black
+    }
+
 
     private func buttonBackground(for countryId: Int, correctId: Int) -> Color {
         if isTimeUp || isAnswered {
-            if countryId == correctId {
-                return Color.green.opacity(0.3)
-            } else if countryId == selectedCountryId {
-                return Color.red.opacity(0.3)
+            if countryId == selectedCountryId {
+                if countryId == correctId {
+                    return Color.white
+                } else {
+                    return Color.orange
+                }
             }
         }
-        return Color.blue.opacity(0.2)
+        return Color.white
+    }
+
+    private func returnOptionBorderColor(for countryId: Int, correctId: Int) -> Color {
+        if isTimeUp || isAnswered {
+            if countryId == correctId {
+                return Color.green // Correct answer's border is green
+            } else if countryId == selectedCountryId {
+                return Color.orange // Wrong answer's border is orange
+            }
+        }
+        return Color.black
     }
 
     private func startTimer() {
@@ -212,18 +242,6 @@ struct QuizView: View {
         .frame(maxWidth: .infinity, alignment: .center)
     }
 }
-
-struct QuestionView: View {
-    let question: Question
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-
-        }
-        .padding()
-    }
-}
-
 
 //#Preview {
 //    QuizView()
