@@ -19,19 +19,20 @@ struct HomeView: View {
         VStack(spacing: 0) {
             TopOrangeView()
             if screenFlow == .scheduleQuiz {
-                HeaderView()
+                HeaderWithTimer(time: Binding(
+                    get: { remainingTime ?? 0 },
+                    set: { remainingTime = $0 }
+                ))
                 TimerInputView(onSave: startTimer)
             } else if screenFlow == .countdownQuiz {
                 CountDownTimer()
             } else if screenFlow == .activeQuiz {
-//                QuizView(question: viewModel.questions)
+                QuizView()
+                    .environmentObject(viewModel)
             }
         }
         .frame(maxHeight: .infinity, alignment: .top)
         .ignoresSafeArea()
-        .onAppear {
-            
-        }
     }
     
     private func TimerView() -> some View {
@@ -56,26 +57,6 @@ struct HomeView: View {
             .frame(height: 100)
     }
     
-    private func HeaderView() -> some View {
-        VStack(spacing: 0) {
-            HStack {
-                TimerView()
-                Title()
-            }
-            HorizontalDividerView()
-        }
-        .padding(.top, 15)
-        .padding(.horizontal, 5)
-    }
-    
-    private func Title() -> some View {
-        Text("FLAGS CHALLENGE")
-            .foregroundStyle(Colors.orange_FF7043)
-            .font(AppFont.interSemibold18.returnFont())
-            .shadow(color: .gray, radius: 2, x: 0, y: 4)
-            .frame(maxWidth: .infinity, alignment: .center)
-    }
-    
     private func startTimer(seconds: Int) {
         remainingTime = seconds
         timer?.invalidate()
@@ -96,19 +77,20 @@ struct HomeView: View {
     @ViewBuilder
     private func CountDownTimer() -> some View {
         if let time = remainingTime, (1...20).contains(time) {
-            VStack {
+            VStack(spacing: 15) {
                 Text("CHALLENGE")
                     .font(AppFont.interSemibold18.returnFont())
-                    .foregroundStyle(.black)
+                    .foregroundColor(.black)
                 HStack {
                     Text("WILL START IN")
-                        .font(.headline)
-                        .foregroundColor(.red)
+                        .font(AppFont.interSemibold24.returnFont())
+                        .foregroundColor(.black)
                     Text("00:\(String(format: "%02d", time))")
                         .foregroundStyle(Colors.gray_787878)
                         .font(AppFont.interSemibold28.returnFont())
                 }
             }
+            .padding(.top, 30)
         }
     }
 }
