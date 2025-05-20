@@ -8,5 +8,7 @@
 		<string>Inter_Semibold24.ttf</string>
 		<string>Inter_Semibold28.ttf</string>
 	</array>
+	<key>UIBackgroundModes</key>
+	<array/>
 </dict>
 </plist>
