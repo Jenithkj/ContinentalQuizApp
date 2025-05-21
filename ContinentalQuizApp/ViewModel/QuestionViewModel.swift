@@ -36,7 +36,8 @@ struct QuestionData: Decodable {
 
 class QuestionViewModel: ObservableObject {
     @Published var questions: [Question] = []
-
+    @Published var currentQuestionIndex: Int = 0
+    
     init() {
         loadQuestions()
     }
@@ -56,6 +57,11 @@ class QuestionViewModel: ObservableObject {
             print("❌ Failed to load or decode questions: \(error.localizedDescription)")
         }
     }
+    
+    func reset() {
+           currentQuestionIndex = 0
+           // Reset any additional quiz state here
+       }
 }
 
 
