@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct ContinentalQuizAppApp: App {
     let persistenceController = PersistenceController.shared
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     var body: some Scene {
         WindowGroup {
