@@ -9,40 +9,43 @@ import SwiftUI
 
 struct HeaderWithTimer: View {
     @Binding var time: Int
-    
+
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                TimerView()
-                Title()
+                Spacer()
+                timerView
+                Spacer()
             }
-            HorizontalDividerView()
+            .padding(.horizontal, 10)
+            .padding(.top, 15)
         }
-        .padding(.top, 15)
-        .padding(.horizontal, 5)
     }
-    
-    private func TimerView() -> some View {
-        VStack {
-            Text(formatTime(time ?? 0))
-                .foregroundStyle(.white)
-                .padding(20)
-        }
-        .background(.black)
-        .cornerRadius(10, corners: [.topLeft, .topRight, .bottomRight])
+
+    private var timerView: some View {
+        Text(timeFormatted)
+            .font(.system(size: 24, weight: .bold, design: .monospaced))
+            .foregroundStyle(.white)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 24)
+            .background(
+                RoundedRectangle(cornerRadius: 25)
+                    .fill(Color.black.opacity(0.4))
+                    .background(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 25)
+                            .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                    )
+                    .shadow(color: .black.opacity(0.4), radius: 10, x: 0, y: 4)
+                    .shadow(color: .white.opacity(0.1), radius: 4, x: 0, y: -2)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 25))
     }
-    
-    private func Title() -> some View {
-        Text("FLAGS CHALLENGE")
-            .foregroundStyle(Colors.orange_FF7043)
-            .font(AppFont.interSemibold18.returnFont())
-            .shadow(color: .gray, radius: 2, x: 0, y: 4)
-            .frame(maxWidth: .infinity, alignment: .center)
-    }
-    
-    private func formatTime(_ totalSeconds: Int) -> String {
-        let minutes = totalSeconds / 60
-        let seconds = totalSeconds % 60
+
+    private var timeFormatted: String {
+        let minutes = time / 60
+        let seconds = time % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
 }
+

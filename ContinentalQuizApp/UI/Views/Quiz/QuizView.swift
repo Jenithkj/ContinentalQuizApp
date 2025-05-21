@@ -24,12 +24,18 @@ struct QuizView: View {
         VStack(spacing: 20) {
             if isGameOver {
                 ResultView()
+                    .frame(maxHeight: .infinity, alignment: .center)
             } else {
-                QuestionHeaderView()
-                QuizOptionsView()
+                VStack {
+                    QuestionHeaderView()
+                    QuizOptionsView()
+                    HeaderWithTimer(time: $countdown)
+                }
+                .padding(.top)
+                .frame(maxHeight: .infinity, alignment: .top)
             }
         }
-        .frame(maxHeight: .infinity, alignment: .top)
+        .frame(maxHeight: .infinity)
         .onAppear {
             startTimer()
         }
@@ -92,43 +98,32 @@ struct QuizView: View {
         if !viewModel.questions.isEmpty {
             let question = viewModel.questions[currentQuestionIndex]
             let countries = question.countries
-            let midIndex = countries.count / 2
-            let firstColumn = Array(countries.prefix(midIndex + countries.count % 2))
-            let secondColumn = Array(countries.suffix(from: midIndex + countries.count % 2))
 
-            HStack(alignment: .top) {
+            VStack(spacing: 20) {
                 FlagImageView(question.countryCode)
-                Spacer()
-                HStack(alignment: .top, spacing: 20) {
-                    VStack(spacing: 10) {
-                        ForEach(firstColumn, id: \.id) { country in
-                            countryButton(for: country, correctId: question.answerID)
-                        }
-                    }
+                    .padding(.bottom, 20)
 
-                    VStack(spacing: 10) {
-                        ForEach(secondColumn, id: \.id) { country in
-                            countryButton(for: country, correctId: question.answerID)
-                        }
-                    }
+                ForEach(countries, id: \.id) { country in
+                    countryButton(for: country, correctId: question.answerID)
+                }
+
+                if isTimeUp {
+                    Text("Time's Up!")
+                        .font(.headline)
+                        .foregroundColor(.green)
                 }
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 25)
-
-            if isTimeUp {
-                Text("Time's Up!")
-                    .font(.headline)
-                    .foregroundColor(.red)
-            }
         } else {
             Text("Loading questions...")
         }
     }
 
+
     @ViewBuilder
     private func countryButton(for country: Country, correctId: Int) -> some View {
-        VStack(spacing: 5) {
+        VStack(spacing: 6) {
             Button(action: {
                 guard !isAnswered else { return }
                 selectedCountryId = country.id
@@ -140,25 +135,24 @@ struct QuizView: View {
                 evaluateAnswer()
             }) {
                 Text(country.countryName)
-                    .padding(.horizontal, 10)
-                    .frame(width: 120, height: 25)
-                    .background(buttonBackground(for: country.id, correctId: correctId))
-                    .font(.system(size: 13, weight: .semibold))
+                    .frame(maxWidth: .infinity, minHeight: 45)
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(getTextColor(for: country.id, correctId: correctId))
-                    .minimumScaleFactor(0.8)
-                    .cornerRadius(2)
+                    .background(buttonBackground(for: country.id, correctId: correctId))
+                    .cornerRadius(12)
             }
             .overlay(
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(returnOptionBorderColor(for: country.id, correctId: correctId), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(returnOptionBorderColor(for: country.id, correctId: correctId), lineWidth: 1.5)
             )
-            
+
             Text(resultText(for: country.id, correctId: correctId))
-                .font(.system(size: 6, weight: .regular))
+                .font(.system(size: 10, weight: .medium))
                 .foregroundColor(resultColor(for: country.id, correctId: correctId))
-                .frame(height: 8)
+                .frame(height: 12)
         }
     }
+
 
     private func resultText(for id: Int, correctId: Int) -> String {
         guard isAnswered else { return "" }
@@ -173,9 +167,9 @@ struct QuizView: View {
     private func resultColor(for id: Int, correctId: Int) -> Color {
         guard isAnswered else { return .clear }
         if selectedCountryId == id {
-            return id == correctId ? Colors.green_01C414 : Colors.red_FF0000
+            return id == correctId ? .yellow : Colors.red_FF0000
         } else if id == correctId {
-            return Colors.green_01C414
+            return .yellow
         }
         return .clear
     }
@@ -185,7 +179,7 @@ struct QuizView: View {
         Image(name)
             .resizable()
             .scaledToFit()
-            .frame(width: 70, height: 60)
+            .frame(width: 120, height: 95)
             .shadow(radius: 2)
     }
 
@@ -248,30 +242,56 @@ struct QuizView: View {
     }
     
     private func ResultView() -> some View {
-        VStack {
-            if showScore {
-                HStack {
-                    Text("SCORE:")
-                        .font(.system(size: 20, weight: .regular))
-                        .foregroundStyle(.orangeFF7043)
+        VStack(spacing: 25) {
+            if !showScore {
+                VStack(spacing: 12) {
+                    Text("Your Score")
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundColor(.white)
+                        .textCase(.uppercase)
+
                     Text("\(score)/\(viewModel.questions.count)")
-                        .font(.system(size: 30, weight: .semibold))
-                        .foregroundColor(Colors.gray_484848)
+                        .font(.system(size: 60, weight: .heavy, design: .rounded))
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.4), radius: 5, x: 0, y: 3)
+
+                    if score >= viewModel.questions.count / 2 {
+                        Text("Well done! 🎉")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(.green)
+                    } else {
+                        Text("Try again! 💪")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(.yellow)
+                    }
                 }
             } else {
-                Text("GAME OVER")
-                    .font(.system(size: 35, weight: .semibold))
-                    .foregroundColor(Colors.gray_484848)
+                Text("Quiz Over")
+                    .font(.system(size: 45, weight: .black, design: .rounded))
+                    .foregroundColor(.white)
+                    .shadow(color: .black.opacity(0.4), radius: 6, x: 0, y: 4)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .center)
-        .padding(.vertical, 55)
-        .background(Colors.gray_D9D9D9)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 50)
+        .padding(.horizontal, 20)
+        .background(
+            LinearGradient(
+                colors: [Colors.orange_FF7043, Colors.gray_484848],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .cornerRadius(25)
+            .shadow(color: .black.opacity(0.3), radius: 15, x: 0, y: 10)
+        )
+        .padding(.horizontal, 20)
     }
+
+
+
     
     private func QuestionHeaderView() -> some View {
         VStack {
-            HeaderWithTimer(time: $countdown)
             HStack {
                 ZStack {
                     Rectangle()
@@ -286,8 +306,8 @@ struct QuizView: View {
                 }
                 Spacer()
                 Text("GUESS THE COUNTRY FROM THE FLAG ?")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.black)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
                     .frame(maxWidth: .infinity, alignment: .center)
             }
         }
