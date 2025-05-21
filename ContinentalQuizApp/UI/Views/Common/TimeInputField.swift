@@ -21,7 +21,7 @@ struct TimeInputField: View {
             .frame(width: 50, height: 50)
             .background(Color(.systemGray4))
             .cornerRadius(10)
-            .foregroundColor(.gray)
+            .foregroundColor(.black)
             .focused($focusedField, equals: field)
             .onChange(of: text) { newValue in
                 if newValue.count > 1 || !newValue.allSatisfy(\.isNumber) {

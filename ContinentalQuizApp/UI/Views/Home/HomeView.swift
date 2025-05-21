@@ -16,84 +16,103 @@ struct HomeView: View {
     @State private var currentQuestionIndex: Int = 0
     
     var body: some View {
-        VStack(spacing: 0) {
-            TopOrangeView()
-            if screenFlow == .scheduleQuiz {
-                HeaderWithTimer(time: Binding(
-                    get: { remainingTime ?? 0 },
-                    set: { remainingTime = $0 }
-                ))
-                TimerInputView(onSave: startTimer)
-            } else if screenFlow == .countdownQuiz {
-                CountDownTimer()
-            } else if screenFlow == .activeQuiz {
-                QuizView()
-                    .environmentObject(viewModel)
+        ZStack {
+            LinearGradient(colors: [.black, .purple, .blue], startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                if screenFlow == .scheduleQuiz {
+                    TimerInputView(onSave: startTimer)
+                } else if screenFlow == .countdownQuiz {
+                    CountDownTimer()
+                } else if screenFlow == .activeQuiz {
+                    QuizView()
+                        .environmentObject(viewModel)
+                }
             }
         }
-        .frame(maxHeight: .infinity, alignment: .top)
-        .ignoresSafeArea()
     }
     
-    private func TimerView() -> some View {
-        VStack {
-            Text(formatTime(remainingTime ?? 0))
-                .foregroundStyle(.white)
-                .padding(20)
-        }
-        .background(.black)
-        .cornerRadius(10, corners: [.topLeft, .topRight, .bottomRight])
-    }
+
     
     private func formatTime(_ totalSeconds: Int) -> String {
-        let minutes = totalSeconds / 60
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
         let seconds = totalSeconds % 60
-        return String(format: "%02d:%02d", minutes, seconds)
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
-    
-    private func TopOrangeView() -> some View {
-        Rectangle()
-            .fill(Colors.orange_FF7043)
-            .frame(height: 100)
-    }
-    
+
     private func startTimer(seconds: Int) {
         remainingTime = seconds
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             guard let time = remainingTime else { return }
-            if time > 1 && time <= 20 {
-                screenFlow = .countdownQuiz
-            } else if time == 0 {
+            if time == 0 {
                 screenFlow = .activeQuiz
                 timer?.invalidate()
                 timer = nil
                 return
+            } else {
+                screenFlow = .countdownQuiz
             }
             remainingTime = time - 1
         }
     }
-
+    
     @ViewBuilder
     private func CountDownTimer() -> some View {
-        if let time = remainingTime, (1...20).contains(time) {
-            VStack(spacing: 15) {
-                Text("CHALLENGE")
-                    .font(AppFont.interSemibold18.returnFont())
-                    .foregroundColor(.black)
-                HStack {
-                    Text("WILL START IN")
-                        .font(AppFont.interSemibold24.returnFont())
-                        .foregroundColor(.black)
-                    Text("00:\(String(format: "%02d", time))")
-                        .foregroundStyle(Colors.gray_787878)
-                        .font(AppFont.interSemibold28.returnFont())
+        if let time = remainingTime {
+            ZStack {
+                // Glowing circular aura
+                Circle()
+                    .fill(Color.pink.opacity(0.1))
+                    .frame(width: 240, height: 240)
+                    .blur(radius: 40)
+                    .scaleEffect(1.1)
+                    .shadow(color: .neonPink.opacity(0.7), radius: 30)
+                    .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: time)
+                
+                VStack(spacing: 14) {
+                    Text("⚡ CHALLENGE ⚡")
+                        .font(.system(size: 24, weight: .black))
+                        .foregroundColor(.neonBlue)
+                        .shadow(color: .neonBlue.opacity(0.9), radius: 12)
+                    
+                    Text("Will start in")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.85))
+                    
+                    Text(formatTime(time))
+                        .font(.system(size: 46, weight: .bold, design: .monospaced))
+                        .foregroundColor(.neonPink)
+                        .shadow(color: .neonPink, radius: 18)
                 }
+                .padding(35)
+                .background(
+                    RoundedRectangle(cornerRadius: 30)
+                        .fill(Color.black.opacity(0.7))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 30)
+                                .stroke(
+                                    LinearGradient(colors: [.neonPink, .neonBlue], startPoint: .topLeading, endPoint: .bottomTrailing),
+                                    lineWidth: 2.5
+                                )
+                        )
+                        .shadow(color: .neonBlue.opacity(0.5), radius: 10)
+                )
             }
-            .padding(.top, 30)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 40)
         }
     }
 }
+
+extension Color {
+    static let neonPink = Color(red: 1.0, green: 0.2, blue: 0.6)
+    static let neonBlue = Color(red: 0.1, green: 0.9, blue: 1.0)
+}
+
+
 
 struct TimerInputView: View {
     @State private var hourTens = ""
@@ -106,70 +125,63 @@ struct TimerInputView: View {
     @FocusState private var focusedField: TimeField?
 
     var body: some View {
-        VStack(spacing: 0) {
-            Schedule()
-            HStack(spacing: 20) {
-                HourField()
-                MinuteField()
-                SecondField()
+        VStack(spacing: 40) {
+            Text("⏱ SCHEDULE")
+                .font(.system(size: 28, weight: .heavy))
+                .foregroundColor(.mint)
+                .shadow(color: .mint, radius: 10)
+
+            HStack(spacing: 32) {
+                timeInputGroup(title: "Hour", digits: [$hourTens, $hourUnits], fields: [.hourTens, .hourUnits])
+                timeInputGroup(title: "Minute", digits: [$minuteTens, $minuteUnits], fields: [.minuteTens, .minuteUnits])
+                timeInputGroup(title: "Second", digits: [$secondTens, $secondUnits], fields: [.secondTens, .secondUnits])
             }
-            .padding(.top, 15)
-            SaveButton()
-        }
-        .padding(.top, 10)
-    }
-    
-    private func Schedule() -> some View {
-        Text("SCHEDULE")
-            .font(.system(size: 25, weight: .bold))
-    }
-    
-    private func HourField() -> some View {
-        VStack(spacing: 3) {
-            Text("Hour")
-                .font(.system(size: 13, weight: .regular))
-            HStack(spacing: 5) {
-                TimeInputField(text: $hourTens, field: .hourTens, focusedField: $focusedField)
-                TimeInputField(text: $hourUnits, field: .hourUnits, focusedField: $focusedField)
+
+            Button(action: {
+                let hours = (Int(hourTens) ?? 0) * 10 + (Int(hourUnits) ?? 0)
+                let minutes = (Int(minuteTens) ?? 0) * 10 + (Int(minuteUnits) ?? 0)
+                let seconds = (Int(secondTens) ?? 0) * 10 + (Int(secondUnits) ?? 0)
+                let totalSeconds = hours * 3600 + minutes * 60 + seconds
+                onSave(totalSeconds)
+            }) {
+                Text("Save")
+                    .font(.headline)
+                    .padding()
+                    .frame(width: 120)
+                    .background(LinearGradient(colors: [.cyan, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .foregroundColor(.white)
+                    .cornerRadius(15)
+                    .shadow(color: .purple, radius: 10)
+                    .padding(.bottom, 20)
             }
+            .padding(.top, 20)
         }
+        .padding()
+        .background(.black.opacity(0.6))
+        .cornerRadius(25)
+        .shadow(color: .purple.opacity(0.5), radius: 20)
     }
 
-    private func MinuteField() -> some View {
-        VStack(spacing: 3) {
-            Text("Minute")
-                .font(.system(size: 13, weight: .regular))
-            HStack(spacing: 5) {
-                TimeInputField(text: $minuteTens, field: .minuteTens, focusedField: $focusedField)
-                TimeInputField(text: $minuteUnits, field: .minuteUnits, focusedField: $focusedField)
+    private func timeInputGroup(title: String, digits: [Binding<String>], fields: [TimeField]) -> some View {
+        VStack(spacing: 10) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.white)
+            HStack(spacing: 15) {
+                ForEach(0..<2, id: \.self) { index in
+                    TimeInputField(text: digits[index], field: fields[index], focusedField: $focusedField)
+                        .frame(width: 30, height: 45)
+                        .padding(.horizontal, 5)
+                        .multilineTextAlignment(.center)
+                        .font(.system(size: 20, weight: .bold, design: .monospaced))
+                        .keyboardType(.numberPad)
+                        .focused($focusedField, equals: fields[index])
+                }
             }
         }
-    }
-    
-    private func SecondField() -> some View {
-        VStack(spacing: 3) {
-            Text("Second")
-                .font(.system(size: 13, weight: .regular))
-            HStack(spacing: 5) {
-                TimeInputField(text: $secondTens, field: .secondTens, focusedField: $focusedField)
-                TimeInputField(text: $secondUnits, field: .secondUnits, focusedField: $focusedField)
-            }
-        }
-    }
-    
-    private func SaveButton() -> some View {
-        CustomButton(action: {
-            let hours = (Int(hourTens) ?? 0) * 10 + (Int(hourUnits) ?? 0)
-            let minutes = (Int(minuteTens) ?? 0) * 10 + (Int(minuteUnits) ?? 0)
-            let seconds = (Int(secondTens) ?? 0) * 10 + (Int(secondUnits) ?? 0)
-            let totalSeconds = hours * 3600 + minutes * 60 + seconds
-            onSave(totalSeconds)
-        }, title: "Save")
-        .modifier(OrangeButtonModifier())
-        .frame(width: 100, height: 35)
-        .padding(.top, 20)
     }
 }
+
 
 enum ScreenFlow {
     case scheduleQuiz
@@ -180,3 +192,8 @@ enum ScreenFlow {
 #Preview {
     HomeView()
 }
+
+//HeaderWithTimer(time: Binding(
+//    get: { remainingTime ?? 0 },
+//    set: { remainingTime = $0 }
+//))
