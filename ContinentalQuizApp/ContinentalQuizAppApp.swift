@@ -9,12 +9,16 @@ import SwiftUI
 
 @main
 struct ContinentalQuizAppApp: App {
-    let persistenceController = PersistenceController.shared
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @State private var isSplashActive = true
 
     var body: some Scene {
         WindowGroup {
-            HomeView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            if isSplashActive {
+                AnimatedWordSplashView(isActive: $isSplashActive)
+            } else {
+                HomeView()
+            }
         }
     }
 }
